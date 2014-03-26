@@ -56,6 +56,8 @@ def extract(search, replace, force, files):
     for word in words:
         if word == search:
             result = replace
+        elif word.istitle():
+            result = replace.title()
         elif word.islower() or (force and word[0].islower()):
             result = replace.lower()
         elif word.isupper() or (force and word[0].isupper()):
@@ -67,7 +69,7 @@ def extract(search, replace, force, files):
         print('%s: %s' % (word, result))
 
 
-def replace(mapping_file, files):
+def replace(mapping_file, files, simulate):
     mapping = {}
     missing = set()
     with io.open(mapping_file, 'r', encoding="UTF-8") as fd:
@@ -82,7 +84,7 @@ def replace(mapping_file, files):
     else:
         func = lambda matchobj: mapping[matchobj.group(0)]
         pattern = '(' + '|'.join(mapping.keys()) + ')'
-        inplace=False
+        inplace=not simulate
         with fileinput.input(files, inplace=inplace) as fd:
             for line in fd:
                 if not inplace and fileinput.isfirstline():
@@ -111,7 +113,7 @@ def main():
 
     parser_replace = subparsers.add_parser('replace', help='Use a translation map to modify files')
 
-    parser_replace.add_argument('--confirm', help="When files differ, prompt confirmation before overwrite", action='store_true')
+    #parser_replace.add_argument('--confirm', help="When files differ, prompt confirmation before overwrite", action='store_true')
     parser_replace.add_argument('--simulate', help="Simulate replacement. Print results on the standard output", action='store_true')
     parser_replace.add_argument('mapping', metavar='MAPPING', help='The file containing the translation map to use')
     parser_replace.add_argument('files', metavar='FILE', type=str, nargs='*', help='The file(s) where performing operation')
@@ -125,7 +127,7 @@ def main():
     if namespace.command == 'extract':
         extract(namespace.search, namespace.replacement, namespace.force, namespace.files)
     elif namespace.command == 'replace':
-        replace(namespace.mapping, namespace.files)
+        replace(namespace.mapping, namespace.files, namespace.simulate)
     else:
         print('Unknown command %s' % namespace.command, file=sys.stderr)
         parser.print_help()
