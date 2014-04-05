@@ -43,7 +43,7 @@ def print_separator(text):
 #
 #process_files(None, sys.argv[1:], True)
 #
-#sys.exit(1) test
+#sys.exit(1)
 #        
 
 
